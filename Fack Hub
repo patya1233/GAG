@@ -101,11 +101,43 @@ local Toggle = Tab:CreateToggle({
                   end
                end
 
-               task.wait(3)
+               task.wait()
                game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("SummerHarvestRemoteEvent"):FireServer("SubmitAllPlants")
             end
          end)
       end
+   end,
+})
+
+local Button = Tab:CreateButton({
+   Name = "show value",
+   Callback = function()
+    local text = workspace.SummerHarvestEvent.RewardSign:GetChildren()[2].SurfaceGui.PointTextLabel.Text
+
+-- สร้าง ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "TempTextDisplay"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = game:GetService("CoreGui")
+
+-- สร้าง TextLabel
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(0.6, 0, 0.1, 0)
+label.Position = UDim2.new(0.2, 0, 0.45, 0)
+label.AnchorPoint = Vector2.new(0, 0)
+label.BackgroundTransparency = 0.3
+label.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+label.TextColor3 = Color3.fromRGB(255, 255, 255)
+label.TextScaled = true
+label.Font = Enum.Font.SourceSansBold
+label.Text = text
+label.Parent = screenGui
+
+-- รอ 5 วินาทีแล้วลบ
+task.delay(5, function()
+    screenGui:Destroy()
+end)
+
    end,
 })
 
