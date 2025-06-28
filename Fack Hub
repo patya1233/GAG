@@ -110,7 +110,7 @@ local Toggle = Tab:CreateToggle({
 })
 
 local Button = Tab:CreateButton({
-   Name = "show value",
+   Name = "show SummerHarvest value",
    Callback = function()
     local text = workspace.SummerHarvestEvent.RewardSign:GetChildren()[2].SurfaceGui.PointTextLabel.Text
 
