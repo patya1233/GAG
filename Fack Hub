@@ -36,108 +36,117 @@ local Window = Rayfield:CreateWindow({
    }
 })
 
-local Tab = Window:CreateTab("SummerHarvest", "rewind")
+local player = game.Players.LocalPlayer
+   local character = player.Character or player.CharacterAdded:Wait()
+   local pp = character:WaitForChild("HumanoidRootPart")
 
-local Section = Tab:CreateSection("SummerHarvest")
+local aTab = Window:CreateTab("beanstalk even", "rewind")
 
-local autoHarvestEnabled = false
+local Section = aTab:CreateSection("Auto give beanstalk")
 
-local Toggle = Tab:CreateToggle({
-   Name = "Auto SummerHarvest",
+local seed = {}
+local seedSet = {}
+
+for i, farm in ipairs(workspace.Farm:GetChildren()) do
+    if farm.Name == "Farm" then
+        local dataFolder = farm:FindFirstChild("Important") and farm.Important:FindFirstChild("Data")
+        if dataFolder then
+            local owner = dataFolder:FindFirstChild("Owner")
+            if owner and owner:IsA("StringValue") then
+                if owner.Value == player.Name then
+                    local plantsFolder = farm:FindFirstChild("Important") and farm.Important:FindFirstChild("Plants_Physical")
+                    if plantsFolder then
+                        for _, plant in ipairs(plantsFolder:GetChildren()) do
+                            local plantName = plant.Name
+                            if not seedSet[plantName] then
+                                table.insert(seed, plantName)  -- เพิ่มใน seed
+                                seedSet[plantName] = true      -- ทำเครื่องหมายว่าเคยเจอแล้ว
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+local fruit = {}
+
+local Dropdown = aTab:CreateDropdown({
+   Name = "Select fruits",
+   Options = seed,
+   CurrentOption = "",
+   MultipleOptions = true,
+   Flag = "Dropdown1",
+   Callback = function(f)
+      fruit = f
+   end,
+})
+
+local Toggle = aTab:CreateToggle({
+   Name = "Auto collect fruits",
    CurrentValue = false,
    Flag = "Toggle1",
    Callback = function(Value)
-      autoHarvestEnabled = Value
+      _G.LO = Value
+      while _G.LO do task.wait(1)
+      local Players = game:GetService("Players")
+      local player = Players.LocalPlayer
+      local character = player.Character or player.CharacterAdded:Wait()
+      local pp = character:WaitForChild("HumanoidRootPart")
 
-      if autoHarvestEnabled then
-         task.spawn(function()
-            while autoHarvestEnabled do
-               local localplayer = game.Players.LocalPlayer
-               local character = localplayer.Character or localplayer.CharacterAdded:Wait()
-               local hrp = character:WaitForChild("HumanoidRootPart")
-
-               local firedCount = 0
-               local maxFires = 100
-               local teleported = false
-
-               for _, farm in ipairs(workspace.Farm:GetChildren()) do
-                  if not autoHarvestEnabled or firedCount >= maxFires then break end
-
-                  local important = farm:FindFirstChild("Important")
-                  if important then
-                     local data = important:FindFirstChild("Data")
-                     if data and data:FindFirstChild("Owner") and data.Owner.Value == localplayer.Name then
-                        local plants = important:FindFirstChild("Plants_Physical")
-                        if plants then
-                           for _, plant in ipairs(plants:GetChildren()) do
-                              if not autoHarvestEnabled or firedCount >= maxFires then break end
-
-                              local fruits = plant:FindFirstChild("Fruits")
-                              if fruits then
-                                 local tomato = fruits:FindFirstChild("Tomato")
-                                 if tomato then
-                                    if not teleported then
-                                       local targetPart = tomato:IsA("BasePart") and tomato or tomato:FindFirstChildWhichIsA("BasePart")
-                                       if targetPart then
-                                          hrp.CFrame = targetPart.CFrame + Vector3.new(3, 0, 0)
-                                          task.wait(0.3)
-                                          teleported = true
-                                       end
-                                    end
-
-                                    for _, item in ipairs(tomato:GetDescendants()) do
-                                       if not autoHarvestEnabled or firedCount >= maxFires then break end
-
-                                       if item:IsA("ProximityPrompt") then
-                                          fireproximityprompt(item)
-                                          firedCount += 1
-                                       end
-                                    end
-                                 end
+      for i, farm in ipairs(workspace.Farm:GetChildren()) do
+          if farm.Name == "Farm" then
+              local dataFolder = farm:FindFirstChild("Important") and farm.Important:FindFirstChild("Data")
+              if dataFolder then
+                  local owner = dataFolder:FindFirstChild("Owner")
+                  if owner and owner:IsA("StringValue") and owner.Value == player.Name then
+                      local plantsFolder = farm:FindFirstChild("Important") and farm.Important:FindFirstChild("Plants_Physical")
+                      if plantsFolder then
+                          for _, plant in ipairs(plantsFolder:GetChildren()) do
+                              if plant:IsA("Model") then
+                                  for _, f in ipairs(fruit) do
+                                      if plant.Name == f and plant.PrimaryPart then
+                                          pp.CFrame = plant.PrimaryPart.CFrame
+                                          task.wait(0.5)
+                                          for _, desc in ipairs(plant:GetDescendants()) do
+                                             if desc:IsA("ProximityPrompt") then
+                                                fireproximityprompt(desc)
+                                             end
+                                          end
+                                      end
+                                  end
                               end
-                           end
-                        end
-                     end
+                          end
+                      end
                   end
-               end
-
-               task.wait()
-               game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("SummerHarvestRemoteEvent"):FireServer("SubmitAllPlants")
-            end
-         end)
+              end
+          end
+      end
       end
    end,
 })
 
-local Button = Tab:CreateButton({
-   Name = "show SummerHarvest value",
+local Toggle = aTab:CreateToggle({
+   Name = "ออโต้ใส่ของที่มีหนาม",
+   CurrentValue = false,
+   Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(Value)
+      _G.OP = Value
+      while _G.OP do task.wait(1)
+   game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("BeanstalkRESubmitAllPlant"):FireServer()
+   end
+   end,
+})
+
+local Button = aTab:CreateButton({
+   Name = "TP goes on the beanstalk",
    Callback = function()
-    local text = workspace.SummerHarvestEvent.RewardSign:GetChildren()[2].SurfaceGui.PointTextLabel.Text
-
--- สร้าง ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "TempTextDisplay"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = game:GetService("CoreGui")
-
--- สร้าง TextLabel
-local label = Instance.new("TextLabel")
-label.Size = UDim2.new(0.6, 0, 0.1, 0)
-label.Position = UDim2.new(0.2, 0, 0.45, 0)
-label.AnchorPoint = Vector2.new(0, 0)
-label.BackgroundTransparency = 0.3
-label.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-label.TextColor3 = Color3.fromRGB(255, 255, 255)
-label.TextScaled = true
-label.Font = Enum.Font.SourceSansBold
-label.Text = text
-label.Parent = screenGui
-
--- รอ 5 วินาทีแล้วลบ
-task.delay(5, function()
-    screenGui:Destroy()
-end)
-
+   for i, v in pairs(workspace.Interaction.UpdateItems.BeanstalkEvent.Castle.Giant:GetChildren()) do
+      if v.Name == "RootPart" then
+         pp.CFrame = v.CFrame * CFrame.new(6 , -6, 0)
+      end
+   end
    end,
 })
 
