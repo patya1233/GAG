@@ -42,6 +42,16 @@ local player = game.Players.LocalPlayer
 
 local aTab = Window:CreateTab("beanstalk even", "rewind")
 
+local la = workspace.Interaction.UpdateItems.BeanstalkEvent.BeanstalkSprout.BeanStalkTimer.ProgressBilboard.UpgradeBar.ProgressionLabel
+
+local Paragraph = aTab:CreateParagraph({Title = "BeanStalk", Content = la.text})
+
+task.spawn(function()
+    while task.wait(1) do
+        Paragraph:Set({Title = "BeanStalk", Content = la.text})
+    end
+end)
+
 local Section = aTab:CreateSection("Auto give beanstalk")
 
 local seed = {}
@@ -128,7 +138,7 @@ local Toggle = aTab:CreateToggle({
 })
 
 local Toggle = aTab:CreateToggle({
-   Name = "ออโต้ใส่ของตามอีเว้นท์",
+   Name = "ออโต้ใส่ของอีเว้นท์",
    CurrentValue = false,
    Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
    Callback = function(Value)
@@ -147,6 +157,32 @@ local Button = aTab:CreateButton({
          pp.CFrame = v.CFrame * CFrame.new(6 , -6, 0)
       end
    end
+   end,
+})
+
+local bTab = Window:CreateTab("Character", "rewind")
+
+local Slider = bTab:CreateSlider({
+   Name = "WalkSpeed",
+   Range = {20, 1000},
+   Increment = 20,
+   Suffix = "Bananas",
+   CurrentValue = 10,
+   Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(Value)
+   player.Character.Humanoid.WalkSpeed = Value
+   end,
+})
+
+local Slider = bTab:CreateSlider({
+   Name = "JumpPower",
+   Range = {50, 1000},
+   Increment = 50,
+   Suffix = "Bananas",
+   CurrentValue = 10,
+   Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(Value)
+   player.Character.Humanoid.JumpPower = Value
    end,
 })
 
